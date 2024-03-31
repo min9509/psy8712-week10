@@ -37,13 +37,13 @@ ggplot(gss_tbl, aes(x = workhours)) +
 # Create sample rows  
 gss_sample <- sample(nrow(gss_tbl))
 # Shuffle using the sampled indices 
-gss_shuffle <- gss_tbl[gss_sample,]
+gss_shuffled <- gss_tbl[gss_sample,]
 # Calculate the number of rows for a 75/25 split
-gss_75per <- round(nrow(gss_shuffle) * .75)
+gss_75per <- round(nrow(gss_shuffled) * 0.75)
 # Create the training set using the first 75% of the shuffled data
-gss_train <- gss_shuffle[1:gss_75per,]
+gss_train <- gss_shuffled[1:gss_75per,]
 # Create the test set using the remaining 25% of the shuffled data
-gss_test <- gss_shuffle[(gss_75per + 1):nrow(gss_shuffle),]
+gss_test <- gss_shuffled[(gss_75per + 1):nrow(gss_shuffled), ]
 # Create 10 folds for cross-validation using the workhours column from the training set
 gss_folds <- createFolds(gss_train$workhours, 10)
 # Set up train control for all model
@@ -59,10 +59,12 @@ model_OLS <- train(
   data = gss_train,
   method = "lm", 
   metric = "Rsquared",
-  na.action = na.pass,
   preProcess = "medianImpute",
+  na.action = na.pass,
   trControl = train_control
-)
+  )
+
+OLS_predict <- predict(model_OLS, gss_test, na.action = na.pass)
 
 # Train the elastic net model using train
 model_elastic <- train(
@@ -73,7 +75,7 @@ model_elastic <- train(
   na.action = na.pass,
   preProcess = "medianImpute",
   trControl = train_control
-)
+  )
 
 # Train the random forest model using train
 model_random <- train(
@@ -87,7 +89,7 @@ model_random <- train(
 )
 
 # Train the random XGB using train
-model_random <- train(
+model_XGB <- train(
   workhours ~ .,
   data = gss_train,
   method = "xgbLinear", 
@@ -97,5 +99,36 @@ model_random <- train(
   trControl = train_control
 )
 
+#### Publication #### 
+# Make predictions using the models
+OLS_predict <- predict(model_OLS, gss_test, na.action = na.pass)
+elastic_predict <- predict(model_elastic, gss_test, na.action = na.pass)
+random_predict <- predict(model_random, gss_test, na.action = na.pass)
+XGB_predict <- predict(model_XGB, gss_test, na.action = na.pass)
+
+# Calculate R-squared values for holdout CV
+ho_rsq_OLS <- cor(OLS_predict, gss_test$workhours)^2
+ho_rsq_elastic <- cor(elastic_predict, gss_test$workhours)^2
+ho_rsq_random <- cor(random_predict, gss_test$workhours)^2
+ho_rsq_XGB <- cor(XGB_predict, gss_test$workhours)^2
+
+# Create a tibble with the desired structure
+table1_tbl <- tibble(
+  algo = c("OLS Regression", "Elastic Net", "Random Forest", "eXtreme Gradient Boosting"),
+  cv_rsq = c(
+    str_remove(format(round(model_OLS$results$Rsquared, 2), nsmall = 2), pattern = "^0"),
+    str_remove(format(round(max(model_elastic$results$Rsquared), 2), nsmall = 2), pattern = "^0"),
+    str_remove(format(round(max(model_random$results$Rsquared), 2), nsmall = 2), pattern = "^0"),
+    str_remove(format(round(max(model_XGB$results$Rsquared), 2), nsmall = 2), pattern = "^0")),
+  ho_rsq = c(
+    str_remove(format(round(ho_rsq_OLS, 2), nsmall = 2), pattern = "^0"),
+    str_remove(format(round(ho_rsq_elastic, 2), nsmall = 2), pattern = "^0"),
+    str_remove(format(round(ho_rsq_random, 2), nsmall = 2), pattern = "^0"),
+    str_remove(format(round(ho_rsq_XGB, 2), nsmall = 2), pattern = "^0")
+  )
+)
+
+# Print the table
+print(table1_tbl)
 
 
