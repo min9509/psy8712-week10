@@ -53,7 +53,6 @@ train_control <- trainControl(method = "cv",
                               verboseIter = TRUE)
 
 ## Run OLS,  elastic net, random forest, and eXtreme Gradient Boosting
-
 # Train the OLS regression model using train
 model_OLS <- train(
   workhours ~ .,
@@ -64,6 +63,19 @@ model_OLS <- train(
   preProcess = "medianImpute",
   trControl = train_control
 )
+
+# Train the elastic net model using train
+model_OLS <- train(
+  workhours ~ .,
+  data = gss_train,
+  method = "glmnet", 
+  metric = "Rsquared",
+  na.action = na.pass,
+  preProcess = "medianImpute",
+  trControl = train_control
+)
+
+
 
 
 
