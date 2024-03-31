@@ -65,7 +65,7 @@ model_OLS <- train(
 )
 
 # Train the elastic net model using train
-model_OLS <- train(
+model_elastic <- train(
   workhours ~ .,
   data = gss_train,
   method = "glmnet", 
@@ -75,9 +75,27 @@ model_OLS <- train(
   trControl = train_control
 )
 
+# Train the random forest model using train
+model_random <- train(
+  workhours ~ .,
+  data = gss_train,
+  method = "ranger", 
+  metric = "Rsquared",
+  na.action = na.pass,
+  preProcess = "medianImpute",
+  trControl = train_control
+)
 
-
-
+# Train the random XGB using train
+model_random <- train(
+  workhours ~ .,
+  data = gss_train,
+  method = "xgbLinear", 
+  metric = "Rsquared",
+  na.action = na.pass,
+  preProcess = "medianImpute",
+  trControl = train_control
+)
 
 
 
