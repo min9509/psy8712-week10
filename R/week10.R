@@ -131,4 +131,21 @@ table1_tbl <- tibble(
 # Print the table
 print(table1_tbl)
 
+# A1. 
+# The results, measured in R-squared values, varied significantly across the different models. 
+# The OLS Regression model showed the lowest performance with an R-squared value of 0.00, indicating a poor fit to the data. 
+# Conversely, Elastic Net, Random Forest, and eXtreme Gradient Boosting (XGB) models performed relatively better, 
+# with R-squared values of 0.49, 0.40, and 0.32, respectively.
+# I believe this variation in results can be attributed to the differences in how each model handles the data 
+# and captures the underlying relationships between variables. 
 
+# A2.
+# The k-fold cross-validation (CV) R-squared values were generally lower than the holdout CV R-squared values. 
+# This is because k-fold CV divides the data into multiple folds for training and testing, 
+# which tends to give a more conservative estimate of how well the model performs.
+
+# A3.
+# For real-life predictions, I'd choose the Random Forest model 
+# because it had the best prediction accuracy among the models tested. 
+# It's good with big datasets and can handle complex relationships well. 
+# However, it might overfit and take longer to train with large amounts of data.
